@@ -15,10 +15,11 @@ void init_trie(TrieNode *node, char ch){
 }
 
 //initialize the posting list for a word
-void init_plist(TrieNode *node, char* word, int docno){
+void init_plist(TrieNode *node, char* word, int len, int docno){
   node->list = malloc(sizeof(Plist));
-  node->list->word = malloc(strlen(word)+1);
-  strcpy(node->list->word, word);
+  node->list->word = malloc(len+1);
+  strncpy(node->list->word, word, len);
+  node->list->word[len] = '\0';
   node->list->appearances = 1;
   node->list->docs = 1;
   //initialize the frequencies list
@@ -28,11 +29,11 @@ void init_plist(TrieNode *node, char* word, int docno){
   node->list->frequencies->next = NULL;
 }
 
-void insert_in_trie(TrieNode *node, char *word, int pos, int docno){
+void insert_in_trie(TrieNode *node, char *word, int pos, int len, int docno){
   if(node->letter == word[pos]){
-    if(word[pos+1] == '\0'){  //word has ended with the current letter
+    if(pos+1 == len){  //word has ended with the current letter
       if(node->list ==NULL)
-        init_plist(node, word, docno);
+        init_plist(node, word, len, docno);
       else
         search_n_update(node->list, docno);
     }
@@ -49,7 +50,7 @@ void insert_in_trie(TrieNode *node, char *word, int pos, int docno){
           init_trie(node->down, word[pos+1]);
         }
       }
-      insert_in_trie(node->down, word, ++pos, docno);
+      insert_in_trie(node->down, word, ++pos, len, docno);
     }
   }
   else { //go to the next letter (horizontal movement)
@@ -65,7 +66,7 @@ void insert_in_trie(TrieNode *node, char *word, int pos, int docno){
         init_trie(node->next, word[pos]);
       }
     }
-    insert_in_trie(node->next, word, pos, docno);
+    insert_in_trie(node->next, word, pos, len, docno);
   }
 }
 
@@ -125,21 +126,22 @@ TrieNode* makeTrie(char **documents, int docsize){
       while((ch = subs[len]) != ' ' && ch !='\t' && ch != '\0')
         len++;
       //copy the word in variable
-      word = realloc(word, len+1);
-      strncpy(word, subs, len);
-      word[len] = '\0';
+      word = subs;
+      // word = realloc(word, len+1);
+      // strncpy(word, subs, len);
+      // word[len] = '\0';
       //printf("%s\n", word);
       if(trie->letter > word[0])     //swap root to maintain order (& law)
         swap_root(&trie, word[0]);
       //insert to trie
-      insert_in_trie(trie, word, 0, i);
+      insert_in_trie(trie, word, 0, len, i);
       subs += len;
       if(ch != '\0')           //if it's the end of the document don't search
         while(isspace(subs[0]))   //set substring to new word
           subs++;
     }
   }
-  free(word);
+  //free(word);
   return trie;
 }
 

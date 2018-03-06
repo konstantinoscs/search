@@ -1,5 +1,5 @@
 CC = gcc
-FLAGS = -Wall -g
+FLAGS = -Wall
 DEPS = plist.h search.h sort.h trie.h utilities.h
 NAME = minisearch
 SOURCE = main.c plist.c search.c sort.c trie.c utilities.c

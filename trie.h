@@ -13,7 +13,7 @@ typedef struct TrieNode{
 //initializes a trienode with character ch
 void init_trie(TrieNode *node, char ch);
 //inserts a word in the trie with root node
-void insert_in_trie(TrieNode *node, char *word, int pos, int docno);
+void insert_in_trie(TrieNode *node, char *word, int pos, int len, int docno);
 void print_trie(TrieNode *node);
 //deletes trie
 void delete_trie(TrieNode *node);

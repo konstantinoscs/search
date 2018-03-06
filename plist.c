@@ -77,16 +77,16 @@ int calculate_doc_appearances(Plist *list){
 void get_all_docid(Plist *list, int **ids, int*idsize){
   FreqInfo *current = list->frequencies;
   int currentId = 0;
-  *idsize = 2;
-  *ids = malloc((*idsize)*sizeof(int));
+  *idsize = list->docs;
+  *ids = malloc(list->docs*sizeof(int));
   while(current!=NULL){
-    if(currentId+1 == (*idsize)){   //realloc condition
-      (*idsize) *= 2;
-      *ids = realloc(*ids, (*idsize)*sizeof(int));
-    }
+    // if(currentId+1 == (*idsize)){   //realloc condition
+    //   (*idsize) *= 2;
+    //   *ids = realloc(*ids, (*idsize)*sizeof(int));
+    // }
     (*ids)[currentId++] = current->doc;
     current = current->next;
   }
-  *ids = realloc(*ids, currentId*sizeof(int));
-  *idsize = currentId;
+  //*ids = realloc(*ids, currentId*sizeof(int));
+  //*idsize = currentId;
 }

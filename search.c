@@ -1,6 +1,9 @@
+#include <ctype.h>
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <sys/ioctl.h>
 
 #include "sort.h"
 #include "trie.h"
@@ -93,16 +96,79 @@ void make_docid_list(TrieNode *trie, int **distinct_doc, int *distinctNo,
   free(documentId);
 }
 
+void fill_carrets(char* carrets, char *document, char **queries, int queriesNo){
+  int ci=0, len=0;   //carrets index
+  char * subs = document, ch = ' ';
+  for(int i=0; i<strlen(document); i++)
+    carrets[i] = ' ';
+  while(ch!='\0'){
+    len = 0;
+    while((ch = subs[len]) != ' ' && ch !='\t' && ch != '\0')
+      len++;
+    subs[len] = '\0';
+    for(int i=0; i<queriesNo; i++){
+      if(!strcmp(queries[i], subs)){
+        for(int j=0; j<len; j++)
+          carrets[ci+j] = '^';
+        break;
+      }
+    }
+    ci+=len;
+    subs[len] = ch;
+    subs+=len;
+    if(ch != '\0')           //if it's the end of the document don't search
+      while(isspace(subs[0])){   //set substring to new word
+        subs++;
+        ci++;
+      }
+  }
+}
+
+void print_result(char *document, char *carrets, int ws_col, int offset){
+  int di=0, ci=0, len = strlen(document);
+  int lines = (len+offset)/ws_col, chars = ws_col -offset;
+  lines = (!lines || (len+offset)%ws_col) ? lines +1 : lines;
+  for(int j=0; j<lines; j++){
+    if(j)
+      for(int i=0; i<offset; i++)
+        printf(" ");
+    for(int i=0; i<chars; i++){
+      if(di==len)
+        break;
+      printf("%c", document[di++]);
+    }
+    printf("\n");
+    for(int i=0; i<offset; i++)
+      printf(" ");
+    for(int i=0; i<chars; i++){
+      if(ci==len)
+        break;
+      printf("%c", carrets[ci++]);
+    }
+    printf("\n");
+  }
+}
+
+int find_width(int number){
+  int digits = 1;
+  while (number/=10) digits++;
+  return digits;
+}
+
 int search(TrieNode *trie, char**documents, int *doc_length, int docsize,
   char**queries, int queriesNo, float k1, float b, double avgdl, int k){
 
   int *distinct_doc = NULL, distinctNo = 0; //number of distinct documents
+  char * carrets = NULL;  //the carrets under the word
   ScoreElem *doc_scores = NULL;
   make_docid_list(trie, &distinct_doc, &distinctNo, queries, queriesNo);
-  //if(distinctNo == 0) //all queries were not present in the text
-    //return 0;
+  int docwidth = find_width(docsize), scorewidth = 0;
+  int idwidth = 2, precision = 5;
+  int offset = 0;
   doc_scores = malloc(distinctNo*sizeof(ScoreElem));
-  int width = 3, precision = 5;
+  struct winsize w;
+  ioctl(fileno(stdout), TIOCGWINSZ, &w);
+  //w.ws_col;
 
   for(int i=0; i<distinctNo; i++){
     doc_scores[i].doc = distinct_doc[i];
@@ -112,12 +178,22 @@ int search(TrieNode *trie, char**documents, int *doc_length, int docsize,
     //printf("%*d.(%*d)[%*lf] %s\n", width, i, width, doc_scores[i].doc, precision, doc_scores[i].score, documents[doc_scores[i].doc]);
   }
   scoreQuicksort(doc_scores, 0, distinctNo-1);
+  if(distinctNo)      //determine the width of the score
+    scorewidth = find_width(doc_scores[0].score);
+  offset = idwidth + docwidth + scorewidth + precision + 7; //set correct offset
   if(distinctNo < k)
     k = distinctNo;
   for(int i=0; i<k; i++){
-    printf("%*d.(%*d)[%*lf] %s\n", width, i+1, width, doc_scores[i].doc, precision, doc_scores[i].score, documents[doc_scores[i].doc]);
+    printf("%*d.(%*d)[%*.*lf] ", idwidth, i+1, docwidth, doc_scores[i].doc,
+      scorewidth+precision+1, precision, doc_scores[i].score);
+    carrets = realloc(carrets, strlen(documents[doc_scores[i].doc]));
+    fill_carrets(carrets, documents[doc_scores[i].doc], queries, queriesNo);
+    //printf("%s\n%s\n", documents[doc_scores[i].doc], carrets);
+    print_result(documents[doc_scores[i].doc], carrets, w.ws_col, offset);
+    //%s\n", , documents[doc_scores[i].doc]);
     //printf("%d after score: %lf\n", doc_scores[i].doc, doc_scores[i].score);
   }
+  free(carrets);
   free(doc_scores);
   free(distinct_doc);
 }
