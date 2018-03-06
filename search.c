@@ -162,7 +162,8 @@ int search(TrieNode *trie, char**documents, int *doc_length, int docsize,
   char * carrets = NULL;  //the carrets under the word
   ScoreElem *doc_scores = NULL;
   make_docid_list(trie, &distinct_doc, &distinctNo, queries, queriesNo);
-  int docwidth = find_width(docsize), scorewidth = 0;
+  int docwidth = 0, scorewidth = 0;
+  int maxid = 0;
   int idwidth = 2, precision = 5;
   int offset = 0;
   doc_scores = malloc(distinctNo*sizeof(ScoreElem));
@@ -175,7 +176,9 @@ int search(TrieNode *trie, char**documents, int *doc_length, int docsize,
     doc_scores[i].score = get_score(trie, documents[distinct_doc[i]],
       distinct_doc[i], doc_length, docsize, queries, queriesNo,
       k1, b, avgdl);
-    //printf("%*d.(%*d)[%*lf] %s\n", width, i, width, doc_scores[i].doc, precision, doc_scores[i].score, documents[doc_scores[i].doc]);
+    if(doc_scores[i].doc>maxid)   //find max id to sepcify width
+      maxid = doc_scores[i].doc;
+    docwidth = find_width(maxid);
   }
   scoreQuicksort(doc_scores, 0, distinctNo-1);
   if(distinctNo)      //determine the width of the score
