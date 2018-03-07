@@ -40,8 +40,17 @@ void delete_list(Plist *list){
 
 //update the posting list for a word
 void search_n_update(Plist *list, int docno){
-  FreqInfo *current = list->frequencies;
-  while(current->doc!=docno){
+  FreqInfo *temp = NULL;
+  if(list->last->doc != docno){
+    temp = malloc(sizeof(FreqInfo));
+    temp->doc = docno;
+    temp->appreance = 0;
+    temp->next = NULL;
+    list->last->next = temp;
+    list->last = temp;
+    list->docs++;
+  }
+  /*while(current->doc!=docno){
     if(current->next == NULL){
       current->next = malloc(sizeof(FreqInfo));
       current->next->doc = docno;
@@ -50,8 +59,8 @@ void search_n_update(Plist *list, int docno){
       list->docs++;
     }
     current = current->next;
-  }
-  current->appreance++;
+  }*/
+  list->last->appreance++;
   list->appearances++;
 }
 

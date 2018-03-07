@@ -27,6 +27,7 @@ void init_plist(TrieNode *node, char* word, int len, int docno){
   node->list->frequencies->doc = docno;
   node->list->frequencies->appreance = 1; //add the first appearance
   node->list->frequencies->next = NULL;
+  node->list->last = node->list->frequencies; //last is also the first
 }
 
 void insert_in_trie(TrieNode *node, char *word, int pos, int len, int docno){

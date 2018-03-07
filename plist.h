@@ -12,6 +12,7 @@ typedef struct Plist{
   int appearances;    //total appearances of word in all documents
   int docs;       //no of documents that have this word in them
   FreqInfo *frequencies;    //frequencies list
+  FreqInfo *last;         //last to speed up updates
 }Plist;
 
 void delete_freq(FreqInfo *frequency);
