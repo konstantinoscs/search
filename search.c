@@ -126,8 +126,8 @@ void fill_carrets(char* carrets, char *document, char **queries, int queriesNo){
 
 void print_result(char *document, char *carrets, int ws_col, int offset){
   int di=0, ci=0, len = strlen(document);
-  int lines = (len+offset)/ws_col, chars = ws_col -offset;
-  lines = (!lines || (len+offset)%ws_col) ? lines +1 : lines;
+  int lines = len/(ws_col-offset), chars = ws_col -offset;
+  if(!lines || len%chars) lines++;
   for(int j=0; j<lines; j++){
     if(j)
       for(int i=0; i<offset; i++)
@@ -181,12 +181,17 @@ int search(TrieNode *trie, char**documents, int *doc_length, int docsize,
     docwidth = find_width(maxid);
   }
   scoreQuicksort(doc_scores, 0, distinctNo-1);
-  if(distinctNo)      //determine the width of the score
+  if(distinctNo){      //determine the width of the score
     scorewidth = find_width(doc_scores[0].score);
+    if(doc_scores[distinctNo].score < 0)
+      scorewidth++;                 //+1 for the - sign
+  }
   offset = idwidth + docwidth + scorewidth + precision + 7; //set correct offset
   if(distinctNo < k)
     k = distinctNo;
   for(int i=0; i<k; i++){
+    // printf("%s\n", documents[doc_scores[i].doc]);
+    // printf("len:%d\n", strlen(documents[doc_scores[i].doc]));
     printf("%*d.(%*d)[%*.*lf] ", idwidth, i+1, docwidth, doc_scores[i].doc,
       scorewidth+precision+1, precision, doc_scores[i].score);
     carrets = realloc(carrets, strlen(documents[doc_scores[i].doc]));
