@@ -30,6 +30,7 @@ void init_plist(TrieNode *node, char* word, int len, int docno){
 }
 
 void insert_in_trie(TrieNode *node, char *word, int pos, int len, int docno){
+  //printf("%c, p:%d, l:%d\n", word[pos], pos, len);
   if(node->letter == word[pos]){
     if(pos+1 == len){  //word has ended with the current letter
       if(node->list ==NULL)
@@ -119,7 +120,8 @@ TrieNode* makeTrie(char **documents, int docsize){
   for(int i=0; i<docsize; i++){
     ch = ' ';
     subs = documents[i];
-    //printf("%s\n", subs);
+    while(isspace(subs[0]))   //set substring to new word
+      subs++;
     while(ch!= '\0'){   //start breaking each document in words
       len=0;
       //count the length of each word
@@ -134,10 +136,11 @@ TrieNode* makeTrie(char **documents, int docsize){
       if(trie->letter > word[0])     //swap root to maintain order (& law)
         swap_root(&trie, word[0]);
       //insert to trie
+      //printf("Klisi\n");
       insert_in_trie(trie, word, 0, len, i);
       subs += len;
       if(ch != '\0')           //if it's the end of the document don't search
-        while(isspace(subs[0]))   //set substring to new word
+        while(isspace(ch=subs[0]))   //set substring to new word
           subs++;
     }
   }
