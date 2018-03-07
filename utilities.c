@@ -15,15 +15,16 @@ int parseArguments(int argc, char ** argv, char** doc, int *k){
     exit(-1);
   }
   while(i<argc){
-    if(!strcmp(argv[i++], "-i")){ //parse docfile
-      *doc = malloc(strlen(argv[i])+1);
+    if(!strcmp(argv[i], "-i")){ //parse docfile
+      *doc = malloc(strlen(argv[++i])+1);
       strcpy(*doc, argv[i]);
     }
-    else if(!strcmp(argv[i++], "-k")){  //parse k
-      *k = atoi(argv[i]);
+    else if(!strcmp(argv[i], "-k")){  //parse k
+      *k = atoi(argv[++i]);
     }
     i++;  //move to the next arg one incremation has already been done
   }
+  printf("k is %d\n", *k);
   return 1;
 }
 
@@ -50,8 +51,17 @@ int parseDocument(char* doc, char*** documents, int *docsize){
     }
     (*documents)[id] = malloc(wordm); //allocate memory for the word
 
-    getc(docf); //get the first space after the document number
+     //get the first space after the document number
+    while(isspace(ch = getc(docf)));
+    ungetc(ch, docf);
     while((ch=getc(docf)) != '\n'){
+      //while(isspace(ch)) ch=getc(docf);
+      if(isspace(ch)){
+        while(isspace(ch) && ch!='\n') ch=getc(docf);
+        if(ch == '\n') break;
+        ungetc(ch, docf);
+        ch = ' ';
+      }
       if(wordc+1 == wordm){  //realloc condition -- save space for '\0'
         wordm *= 2;
         (*documents)[id] = realloc((*documents)[id], wordm);
