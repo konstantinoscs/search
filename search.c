@@ -169,37 +169,35 @@ int search(TrieNode *trie, char**documents, int *doc_length, int docsize,
   doc_scores = malloc(distinctNo*sizeof(ScoreElem));
   struct winsize w;
   ioctl(fileno(stdout), TIOCGWINSZ, &w);
-  //w.ws_col;
 
   for(int i=0; i<distinctNo; i++){
     doc_scores[i].doc = distinct_doc[i];
     doc_scores[i].score = get_score(trie, documents[distinct_doc[i]],
-      distinct_doc[i], doc_length, docsize, queries, queriesNo,
-      k1, b, avgdl);
-    if(doc_scores[i].doc>maxid)   //find max id to sepcify width
-      maxid = doc_scores[i].doc;
-    docwidth = find_width(maxid);
+      distinct_doc[i], doc_length, docsize, queries, queriesNo, k1, b, avgdl);
   }
+
   scoreQuicksort(doc_scores, 0, distinctNo-1);
   if(distinctNo){      //determine the width of the score
     scorewidth = find_width(doc_scores[0].score);
-    if(doc_scores[distinctNo].score < 0)
+    if(doc_scores[distinctNo-1].score < 0)
       scorewidth++;                 //+1 for the - sign
   }
-  offset = idwidth + docwidth + scorewidth + precision + 7; //set correct offset
+
   if(distinctNo < k)
     k = distinctNo;
+
+  for(int i=0; i<k; i++)
+  if(doc_scores[i].doc>maxid)   //find max id to sepcify width
+    maxid = doc_scores[i].doc;
+  docwidth = find_width(maxid);
+  offset = idwidth + docwidth + scorewidth + precision + 7; //set correct offset
+
   for(int i=0; i<k; i++){
-    // printf("%s\n", documents[doc_scores[i].doc]);
-    // printf("len:%d\n", strlen(documents[doc_scores[i].doc]));
     printf("%*d.(%*d)[%*.*lf] ", idwidth, i+1, docwidth, doc_scores[i].doc,
       scorewidth+precision+1, precision, doc_scores[i].score);
     carrets = realloc(carrets, strlen(documents[doc_scores[i].doc]));
     fill_carrets(carrets, documents[doc_scores[i].doc], queries, queriesNo);
-    //printf("%s\n%s\n", documents[doc_scores[i].doc], carrets);
     print_result(documents[doc_scores[i].doc], carrets, w.ws_col, offset);
-    //%s\n", , documents[doc_scores[i].doc]);
-    //printf("%d after score: %lf\n", doc_scores[i].doc, doc_scores[i].score);
   }
   free(carrets);
   free(doc_scores);
