@@ -50,16 +50,6 @@ void search_n_update(Plist *list, int docno){
     list->last = temp;
     list->docs++;
   }
-  /*while(current->doc!=docno){
-    if(current->next == NULL){
-      current->next = malloc(sizeof(FreqInfo));
-      current->next->doc = docno;
-      current->next->appreance = 0;
-      current->next->next = NULL;
-      list->docs++;
-    }
-    current = current->next;
-  }*/
   list->last->appreance++;
   list->appearances++;
 }
@@ -89,13 +79,7 @@ void get_all_docid(Plist *list, int **ids, int*idsize){
   *idsize = list->docs;
   *ids = malloc(list->docs*sizeof(int));
   while(current!=NULL){
-    // if(currentId+1 == (*idsize)){   //realloc condition
-    //   (*idsize) *= 2;
-    //   *ids = realloc(*ids, (*idsize)*sizeof(int));
-    // }
     (*ids)[currentId++] = current->doc;
     current = current->next;
   }
-  //*ids = realloc(*ids, currentId*sizeof(int));
-  //*idsize = currentId;
 }
