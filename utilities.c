@@ -41,10 +41,13 @@ int parseDocument(char* doc, char*** documents, int *docsize){
   while((ch=getc(docf)) != EOF){
     ungetc(ch, docf);
     fscanf(docf, "%d", &id);
+    //error checking
     if(id != ++pid){
-      fprintf(stderr, "ids in docfile are not in the correct order\n");
-      return -1;
+      fprintf(stderr, "ids %d, %d in docfile are not in the correct order\n", id, pid);
+      fclose(docf);
+      return 0;
     }
+
     if(id == docm){     //allocate space for more documents
       docm *= 2;
       *documents = realloc(*documents, docm*sizeof(char*));
@@ -71,14 +74,16 @@ int parseDocument(char* doc, char*** documents, int *docsize){
 
     (*documents)[id][wordc] = '\0';
     (*documents)[id] = realloc((*documents)[id], wordc+1); //shrink to fit
+    *docsize = id+1;    //necessary update in case of emergency
     // printf("%s\n", (*documents)[id]);
     // fflush(stdout);
     wordm = 2;  //re-initialize for next document
     wordc = 0;
   }
-  *documents = realloc(*documents, (id+1)*sizeof(char*)); //shrink to fit
-  *docsize = id+1;
+  *documents = realloc(*documents, (*docsize)*sizeof(char*)); //shrink to fit
+  //*docsize = id+1;
   fclose(docf);
+  return 1;
 }
 
 void printDocuments(char **documents, int docsize, char* desc){
@@ -134,3 +139,19 @@ void deleteQueries(char ***queries, int queriesNo){
   free(*queries);
   *queries = NULL;
 }
+
+void emergency_exit(char ***documents, int docsize, char *doc, char* cmd){
+  deleteQueries(documents, docsize);
+  free(doc);
+  free(cmd);
+}
+
+void cleanup(char ***documents, int docsize, char *doc, char* cmd,
+  int *doc_length, TrieNode *root){
+
+  free(doc_length);
+  delete_trie(root);
+  free(root);
+  emergency_exit(documents, docsize, doc, cmd);
+
+  }
