@@ -18,16 +18,19 @@ int main(int argc, char** argv){
   TrieNode *trie = NULL;
 
   parseArguments(argc, argv, &doc, &k);
-  parseDocument(doc, &documents, &docsize);
+  if(!parseDocument(doc, &documents, &docsize)){
+    emergency_exit(&documents, docsize, doc, cmd);
+    exit(0);
+  }
   printf("Parsed documents\n");
-  //printDocuments(documents, docsize, "");
+
   int *doc_length = malloc(docsize*sizeof(int));  //lengths of documents
   double avgdl=(double) fill_lengths(documents, docsize, doc_length)/docsize;
   clock_t t = clock();
   trie = makeTrie(documents, docsize);
   t = clock() -t;
   printf("Made trie in:%lf\n", (double)t/CLOCKS_PER_SEC);
-  //print_trie(trie);
+
   while(1){
     scanf("%s", cmd);
     if(!strcmp(cmd, "/search")){
@@ -77,12 +80,5 @@ int main(int argc, char** argv){
   }
 
   //cleanup
-  delete_trie(trie);
-  free(trie);
-  free(doc_length);
-  free(doc);
-  free(cmd);
-  for(int i=0; i<docsize; i++)
-    free(documents[i]);
-  free(documents);
+  cleanup(&documents, docsize, doc, cmd, doc_length, trie);
 }
