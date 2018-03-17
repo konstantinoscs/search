@@ -130,10 +130,6 @@ TrieNode* makeTrie(char **documents, int docsize){
         len++;
       //copy the word in variable
       word = subs;
-      // word = realloc(word, len+1);
-      // strncpy(word, subs, len);
-      // word[len] = '\0';
-      //printf("%s\n", word);
       if(trie->letter > word[0])     //swap root to maintain order (& law)
         swap_root(&trie, word[0]);
       //insert to trie
@@ -145,7 +141,6 @@ TrieNode* makeTrie(char **documents, int docsize){
           subs++;
     }
   }
-  //free(word);
   return trie;
 }
 

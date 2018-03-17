@@ -75,8 +75,6 @@ int parseDocument(char* doc, char*** documents, int *docsize){
     (*documents)[id][wordc] = '\0';
     (*documents)[id] = realloc((*documents)[id], wordc+1); //shrink to fit
     *docsize = id+1;    //necessary update in case of emergency
-    // printf("%s\n", (*documents)[id]);
-    // fflush(stdout);
     wordm = 2;  //re-initialize for next document
     wordc = 0;
   }

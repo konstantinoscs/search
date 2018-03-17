@@ -31,7 +31,7 @@ int fill_lengths(char**documents, int docsize, int* doc_length){
 
 double get_idf(TrieNode *trie, int docsize, char *word){
   int nqi = document_appearances(trie, word);
-  return log((docsize-nqi+0.5)/(nqi+0.5));
+  return log10((docsize-nqi+0.5)/(nqi+0.5));
 }
 
 //compute score
@@ -71,10 +71,6 @@ void make_docid_list(TrieNode *trie, int **distinct_doc, int *distinctNo,
   for(int i=0; i<queriesNo; i++){
     get_word_docid(trie, queries[i], &documentId[i], &idSize[i]);
     totalSize += idSize[i];
-    //  printf("for query %d got ids, size: %d ", i, idSize[i]);
-    //  for(int j=0; j<idSize[i]; j++)
-    //    printf("%d ", documentId[i][j]);
-    //  printf("\n");
   }
   if(totalSize != 0){
     *distinct_doc = malloc(totalSize*sizeof(int));
